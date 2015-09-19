@@ -1,0 +1,10 @@
+1 - Create ARP Request packets for local Subnet 
+	send and receive responses
+	get results and print
+	* Find out how to get the local subnet automatically
+
+2- Create DNS poisoning Tool similar to DNS Spoof using scapy
+
+3- Create ARP MITM Tool
+
+4 Create a TCP SYN scanner using Scapy
