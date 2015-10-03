@@ -9,17 +9,26 @@ import signal
 from optparse import OptionParser
 
 usageString= "usage: %prog [-t] target [-g] gateway [-i] interface [-c] number of packets "
-parser = OptionParser()
+parser = OptionParser(usage=usageString)
 parser.add_option('-g','--gateway',action='store',type='string',dest='gateway_ip',help='The gateway/router to intercept')
 parser.add_option('-t','--target',dest='target_ip',help='The victim to intercept')
 parser.add_option('-i','--interface',dest='interface',help='Which interface to use')
 parser.add_option('-c','--packetcount',type='int',dest='packet_count',help='the number of packets to record')
 (options,args) = parser.parse_args()
+if not options.target_ip:   # if filename is not given
+    parser.error('Target not given')
+if not options.gateway_ip:   # if filename is not given
+    parser.error('Gateway not given')
+if not options.interface:   # if filename is not given
+    parser.error('Interface not given')
+if not options.packet_count:
+    parser.error('Number of Packets not given')
+
 print "Gateway: ", options.gateway_ip
 print "Target: ",options.target_ip
 print "Interface: ",options.interface
 print "Number of packets: ",options.packet_count
-Pause = raw_input("Options supplied above, press Enter to continue")
+Pause = raw_input("\n Options supplied above, press Enter to continue")
 
 ###Functions
 
