@@ -10,10 +10,15 @@ from optparse import OptionParser
 
 usageString= "usage: %prog [-t] target [-g] gateway [-i] interface [-c] number of packets "
 parser = OptionParser(usage=usageString)
+#option for gateway
 parser.add_option('-g','--gateway',action='store',type='string',dest='gateway_ip',help='The gateway/router to intercept')
+#option for target
 parser.add_option('-t','--target',dest='target_ip',help='The victim to intercept')
+#option for interface, default string type
 parser.add_option('-i','--interface',dest='interface',help='Which interface to use')
+#packetcount option, int type
 parser.add_option('-c','--packetcount',type='int',dest='packet_count',help='the number of packets to record')
+
 (options,args) = parser.parse_args()
 if not options.target_ip:   # if filename is not given
     parser.error('Target not given')
