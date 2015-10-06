@@ -32,7 +32,7 @@ def extract_image(headers, http_payload):
             #grab the image type and image body:
             image_type = headers['Content-Type'].split("/")[1]
 
-            image = http_payload[http_payload.index("\r\n\r\n")+4]
+            image = http_payload[http_payload.index("\r\n\r\n")+4:]
 
             #if we detect compression decromress the image
             try:
@@ -51,7 +51,7 @@ def extract_image(headers, http_payload):
 
 def http_assembler(pcap_file):
     carved_images = 0
-    faces_detected = 0
+    #faces_detected = 0
 
     a = rdpcap(pcap_file)
 
@@ -63,11 +63,7 @@ def http_assembler(pcap_file):
         http_payload = ""
 
         for packet in sessions[session]:
-            #print "testing", packet
-            #print packet[TCP].dport
-            #print type(packet[TCP].sport), packet[TCP].sport
-            #pause = raw_input("cc")
-            #pause = raw_input("aab")
+
             try:
                 if packet[TCP].dport == 80 or packet[TCP].sport ==80:
                     #
@@ -94,7 +90,7 @@ def http_assembler(pcap_file):
         if image is not None and image_type is not None:
             #pause = raw_input("bb")
             #store the image
-            file_name = "%s-pic_carver_%d.%s" %(pcap_file,carved_images,image_type)
+            file_name = "%s-pic_carved_%d.%s" %(pcap_file,carved_images,image_type)
 
             fd = open("%s/%s" %(pictures_directory,file_name),"wb")
 
@@ -108,16 +104,17 @@ def http_assembler(pcap_file):
             #not implemented yet
 
 
-    return carved_images, faces_detected
+    return carved_images#, faces_detected
 
 
 if __name__ == "__main__":
-    pictures_directory =  "/root/Desktop/pics"
+    pictures_directory = "/root/Desktop/pics"
     pcap_file = "arper.pcap"
 
 
 
-carved_images, faces_detected= http_assembler(pcap_file)
-print "Extraced: %d Images" % carved_images
-print "Detected: %d faces" % faces_detected
+#carved_images, faces_detected= http_assembler(pcap_file)
+carved_images = http_assembler(pcap_file)
+print "Extracted: %d Images" % carved_images
+#print "Detected: %d faces" % faces_detected
 
