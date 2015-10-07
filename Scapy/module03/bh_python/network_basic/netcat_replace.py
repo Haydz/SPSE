@@ -34,7 +34,8 @@ def usage():
 
 def client_sender(buffer):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print "client_sender =",buffer
+    print "client_sender =", buffer
+    print target,port
     try:
         #connect to the target
 
@@ -140,7 +141,7 @@ def client_handler(client_socket):
             client_socket.sent("Failed to save file to %s\r\n" % upload_destination)
 
 
-    if len(execute):
+    if execute ==True:
         #run command
         output = run_command(execute)
 
@@ -173,7 +174,7 @@ if __name__ == "__main__":
     listen = False
     command = False
     upload = False
-    execute = ""
+    execute = False
     target = ""
     #target = ""
     upload_destination =""
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     parser.add_argument('-l','--listen', action='store_true', help='what port to listen on')
     parser.add_argument('-t','--target', action='store',dest='target', help='Target to listen',default='')
     parser.add_argument('-p','--port', action='store',dest='port', type=int, help='what port to listen on')
-    parser.add_argument('-e','--execute',action='store',dest='execute',default='', help='execute a file')
+    parser.add_argument('-e','--execute',dest='execute',action='store_true', help='execute a file')
     parser.add_argument('-c','--command',action='store_true',dest='command', help='Command Shell')
     parser.add_argument('-u','--upload=destination',action='store',dest='upload_destination',default='', help='Upload a file and write to [destination]')
 
@@ -195,6 +196,7 @@ if __name__ == "__main__":
     target = results.target
     command = results.command
     port = results.port
+    execute = results.execute
 
     #print parser.parse_args()
     print listen
