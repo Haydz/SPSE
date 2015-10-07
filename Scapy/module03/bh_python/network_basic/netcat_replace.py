@@ -5,6 +5,7 @@ import socket
 import getopt
 import threading
 import subprocess
+import argparse
 
 # #define global variables
 # listen = False
@@ -16,6 +17,13 @@ import subprocess
 # upload_destination =""
 # port =0
 
+#parsing arguments
+
+
+print
+
+
+
 def usage():
     print "From BHP net tool"
     print
@@ -26,9 +34,10 @@ def usage():
 
 def client_sender(buffer):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+    print "client_sender =",buffer
     try:
         #connect to the target
+
         client.connect((target,port))
         if len(buffer):
             client.send(buffer)
@@ -53,7 +62,7 @@ def client_sender(buffer):
             buffer += "\n"
 
             #send it off
-            cliend.send(buffer)
+            client.send(buffer)
 
     except:
         print "{*} Exception! Exiting"
@@ -63,17 +72,20 @@ def client_sender(buffer):
 
 def server_loop():
     global target
-
-    # if no target is defnined, listen on all interfaces
+    #global port
+    # if no target is defined, listen on all interfaces
     if not len(target):
         target = "0.0.0.0"
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print "Hit Server_loop() on port: %d" % port
         server.bind((target,port))
+        print " Binding on:", target, port
         server.listen(5)
 
     while True:
-        client_socket, addr = server.accept()
 
+        client_socket, addr = server.accept()
+        print "connection from %s:%d" % (addr[0],addr[1])
         #start thread
         client_thread = threading.Thread(target=client_handler, args =(client_socket,))
         client_thread.start()
@@ -81,12 +93,13 @@ def server_loop():
 def run_command(command):
 
     #trim new line
-    command = command.strip()
+    print "run_command() =", command
+    command = command.rstrip()
 
     #run the command get get output
 
     try:
-            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=TRUE)
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
     except:
         output = "Failed to execute command"
 
@@ -105,7 +118,7 @@ def client_handler(client_socket):
 
         #keep reading data until non is available?
 
-        while TRUE:
+        while True:
             data = client_socket.recv(1024)
 
             if not data:
@@ -166,6 +179,28 @@ if __name__ == "__main__":
     upload_destination =""
     port =0
 
+
+    parser = argparse.ArgumentParser(description="Netcat replacement")
+    parser.add_argument('-l','--listen', action='store_true', help='what port to listen on')
+    parser.add_argument('-t','--target', action='store',dest='target', help='Target to listen',default='')
+    parser.add_argument('-p','--port', action='store',dest='port', type=int, help='what port to listen on')
+    parser.add_argument('-e','--execute',action='store',dest='execute',default='', help='execute a file')
+    parser.add_argument('-c','--command',action='store_true',dest='command', help='Command Shell')
+    parser.add_argument('-u','--upload=destination',action='store',dest='upload_destination',default='', help='Upload a file and write to [destination]')
+
+
+    results = parser.parse_args()
+    listen = results.listen
+    upload = results.upload_destination
+    target = results.target
+    command = results.command
+    port = results.port
+
+    #print parser.parse_args()
+    print listen
+    print target
+    print "command",command
+    print port
     # global listen
     # global port
     # global execute
@@ -182,23 +217,23 @@ if __name__ == "__main__":
 
 
 
-    for o,a,in opts:
-        if o in ("-h","--help"):
-            usage()
-        elif o in ("-l","--listen"):
-            listen = True
-        elif o in ("-e", "--execute"):
-            execute = a
-        elif o in ("-c", "--commandshell"):
-            command = True
-        elif o in ("-u", "--upload"):
-            upload_destination = a
-        elif o in ("-t", "--target"):
-            target = a
-        elif o in ("-p", "--ports"):
-            port = int(a)
-        else:
-            assert False, "Unhandled Option"
+    # for o,a,in opts:
+    #     #if o in ("-h","--help"):
+    #         #usage()
+    #     if o in ("-l","--listen"):
+    #         listen = True
+    #     elif o in ("-e", "--execute"):
+    #         execute = a
+    #     elif o in ("-c", "--commandshell"):
+    #         command = True
+    #     elif o in ("-u", "--upload"):
+    #         upload_destination = a
+    #     elif o in ("-t", "--target"):
+    #         target = a
+    #     elif o in ("-p", "--ports"):
+    #         port = int(a)
+    #     else:
+    #         assert False, "Unhandled Option"
 
         #are we going to listen or send data?
 
@@ -213,7 +248,7 @@ if __name__ == "__main__":
 
         #listen and potentially upload, execute, drop a shell
 
-    if not listen:
+    if listen:
         server_loop()
 
 
