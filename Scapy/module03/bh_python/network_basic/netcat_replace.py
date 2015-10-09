@@ -34,7 +34,7 @@ def usage():
 
 def client_sender(buffer):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print "client_sender =", buffer
+    print "client_sender = ", buffer
     print target,port
     try:
         #connect to the target
@@ -49,6 +49,7 @@ def client_sender(buffer):
             response = ""
 
             while recv_len:
+                print 'waiting to recv data'
                 data = client.recv(4096)
                 recv_len = len(data)
                 response += data
@@ -73,6 +74,7 @@ def client_sender(buffer):
 
 def server_loop():
     global target
+    print "inside server loop"
     #global port
     # if no target is defined, listen on all interfaces
     if not len(target):
@@ -110,9 +112,10 @@ def client_handler(client_socket):
     global upload
     global execute
     global command
-
+    print "server inside client handler"
     #check for upload
     if len(upload_destination):
+        print "inside upload_destination on server"
 
         #read all bytes and write to destination
         file_buffer = ""
@@ -120,6 +123,7 @@ def client_handler(client_socket):
         #keep reading data until non is available?
 
         while True:
+            print "inside client_handler while true statment, receiving data"
             data = client_socket.recv(1024)
 
             if not data:
@@ -130,10 +134,12 @@ def client_handler(client_socket):
 
         #take bytes and try to write them
         try:
+
+            print ' Writing data too: ',upload_destination
             file_descriptor = open(upload_destination,"wb")
             file_descriptor.write(file_buffer)
             file_descriptor.close()
-
+            print"file written"
             #acknowledge successful
             client_socket.send("Successfully saved file to %s\r\n:" % upload_destination)
 
@@ -141,7 +147,7 @@ def client_handler(client_socket):
             client_socket.sent("Failed to save file to %s\r\n" % upload_destination)
 
 
-    if execute ==True:
+    if len(execute):
         #run command
         output = run_command(execute)
 
@@ -174,10 +180,10 @@ if __name__ == "__main__":
     listen = False
     command = False
     upload = False
-    execute = False
+    execute = ""
     target = ""
     #target = ""
-    upload_destination =""
+    upload_destination = ""
     port =0
 
 
@@ -185,24 +191,28 @@ if __name__ == "__main__":
     parser.add_argument('-l','--listen', action='store_true', help='what port to listen on')
     parser.add_argument('-t','--target', action='store',dest='target', help='Target to listen',default='')
     parser.add_argument('-p','--port', action='store',dest='port', type=int, help='what port to listen on')
-    parser.add_argument('-e','--execute',dest='execute',action='store_true', help='execute a file')
+    parser.add_argument('-e','--execute',dest='execute',action='store', help='execute file, -e "cat /etc/passwd"')
     parser.add_argument('-c','--command',action='store_true',dest='command', help='Command Shell')
     parser.add_argument('-u','--upload=destination',action='store',dest='upload_destination',default='', help='Upload a file and write to [destination]')
 
 
     results = parser.parse_args()
     listen = results.listen
-    upload = results.upload_destination
+    upload_destination = results.upload_destination
     target = results.target
     command = results.command
     port = results.port
     execute = results.execute
+    #if len(results.upload_destination):
+    #    upload_destination = a
 
     #print parser.parse_args()
-    print listen
-    print target
+    print "listen: ", listen
+    print 'target',target
     print "command",command
+    print 'execute command: ',execute
     print port
+    print 'upload', upload_destination
     # global listen
     # global port
     # global execute
@@ -210,12 +220,7 @@ if __name__ == "__main__":
     # global upload_destination
     # global target
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],"hle:t:p:cu", ["help","listen","execute","target","port","command", \
-                                                                 "upload"])
 
-    except getopt.GetoptError as err:
-        print str(err)
 
 
 
@@ -239,10 +244,12 @@ if __name__ == "__main__":
 
         #are we going to listen or send data?
 
-    if not listen and len(target) and port > 0:
+    if listen == False and len(target) and port > 0:
             #read in the buffer form the comand line
             #this will block, so send CTRL-D if not sending input
             # to stdin
+            print "inside listen == false"
+
             buffer=sys.stdin.read()
 
             #send data
@@ -251,6 +258,7 @@ if __name__ == "__main__":
         #listen and potentially upload, execute, drop a shell
 
     if listen:
+        print "entering server_loop"
         server_loop()
 
 
